@@ -2,24 +2,30 @@ const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
   const API_KEY = 'VmFPQzZnU041pybFhhdXVMUUN1QT09';
-  const SIGNUP_ID = 'YOUR_SIGNUP_ID_HERE'; // Replace with your real SignUp ID
+  const URL = `https://api.signupgenius.com/v2/k/signups/created/active/?user_key=${API_KEY}`;
 
   try {
-    const response = await fetch(`https://api.signupgenius.com/v2/k/signups/report/all/${SIGNUP_ID}/?user_key=${API_KEY}`);
-    const data = await response.json();
+    const res = await fetch(URL, {
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP error! Status: ${res.status}, Body: ${text}`);
+    }
+
+    const data = await res.json();
 
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: 'Failed to fetch signups',
-        details: err.message
-      })
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: "Failed to fetch signups", details: err.message }),
     };
   }
 };
